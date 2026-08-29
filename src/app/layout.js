@@ -69,6 +69,10 @@ export const metadata = {
     googleBot: { index: true, follow: true, "max-image-preview": "large" },
   },
   category: "technology",
+  icons: {
+    icon: [{ url: "/icon.png", type: "image/png" }],
+    apple: [{ url: "/icon.png" }],
+  },
 };
 
 export const viewport = {
