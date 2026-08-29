@@ -1,0 +1,79 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #0b0f19;
+}
+
+html,
+body {
+  background-color: var(--bg);
+  color: #e2e8f0;
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  font-family: "Inter", system-ui, sans-serif;
+  min-height: 100vh;
+}
+
+::selection {
+  background: rgba(59, 130, 246, 0.35);
+  color: #fff;
+}
+
+@layer components {
+  .glass-card {
+    @apply bg-slate-900/70 backdrop-blur-xl border border-slate-800/80 rounded-2xl;
+  }
+  .glass-card-soft {
+    @apply bg-slate-900/50 backdrop-blur-md border border-slate-800/60 rounded-2xl;
+  }
+  .gradient-text {
+    @apply bg-gradient-to-r from-blue-400 via-cyan-300 to-purple-400 bg-clip-text text-transparent;
+  }
+  .gradient-btn {
+    @apply bg-gradient-to-r from-blue-600 via-blue-500 to-purple-600 text-white;
+  }
+  .glow-border-blue {
+    box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.35),
+      0 0 25px -5px rgba(59, 130, 246, 0.45);
+  }
+  .glow-border-purple {
+    box-shadow: 0 0 0 1px rgba(168, 85, 247, 0.35),
+      0 0 25px -5px rgba(168, 85, 247, 0.45);
+  }
+}
+
+@layer utilities {
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: rgba(59, 130, 246, 0.4);
+    border-radius: 9999px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+.aurora-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.aurora-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(120px);
+  opacity: 0.28;
+}
