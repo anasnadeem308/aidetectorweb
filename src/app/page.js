@@ -1,213 +1,239 @@
-import Link from "next/link";
+"use client";
+
+import { useState } from "react";
+import { motion } from "framer-motion";
 import {
-  ScanLine,
+  ScanText,
+  ShieldCheck,
   Zap,
   Lock,
-  ShieldCheck,
+  Gauge,
+  Activity,
   Waves,
   Brain,
-  Activity,
-  ArrowRight,
+  Sparkles,
+  CheckCircle2,
 } from "lucide-react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import AdSlot from "../components/AdSlot";
-import DetectorTool from "../components/DetectorTool";
+import Workspace from "../components/Workspace";
+import ResultCard from "../components/ResultCard";
 import FAQAccordion from "../components/FAQAccordion";
-import { FAQS } from "../lib/faqs";
-import { SITE } from "../lib/site";
-import {
-  softwareApplicationSchema,
-  faqSchema,
-} from "../lib/schema";
-
-export const metadata = {
-  title: "Free AI Content Detector & GPT Checker",
-  description:
-    "Paste any text and instantly estimate whether it was written by a human or an AI like ChatGPT. Free, no sign-up, and analyzed entirely in your browser — nothing is stored.",
-  alternates: { canonical: "/" },
-  openGraph: {
-    title: `${SITE.name} — Free AI Content Detector & GPT Checker`,
-    description:
-      "Instantly estimate whether text was written by a human or an AI. Free, private, and in-browser.",
-    url: SITE.url,
-    type: "website",
-  },
-};
+import { analyzeText } from "../utils/analyzer";
 
 export default function HomePage() {
+  const [text, setText] = useState("");
+  const [result, setResult] = useState(null);
+  const [analyzing, setAnalyzing] = useState(false);
+
+  function handleCheck() {
+    if (analyzing) return;
+    setAnalyzing(true);
+    setResult(null);
+    // Simulate a brief analysis pass for UX (computation is instant).
+    setTimeout(() => {
+      setResult(analyzeText(text));
+      setAnalyzing(false);
+    }, 650);
+  }
+
   return (
     <div className="flex min-h-screen flex-col">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(softwareApplicationSchema()),
-        }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema(FAQS)) }}
-      />
       <Header />
       <main className="flex-1">
         {/* HERO */}
-        <section className="dot-grid border-b border-border">
-          <div className="mx-auto max-w-6xl px-4 pb-8 pt-16 text-center sm:px-6 sm:pt-24">
-            <span className="chip mx-auto">
-              <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-              Free &amp; private — no sign-up, nothing stored
+        <section className="relative mx-auto max-w-7xl px-4 pt-16 text-center sm:px-6 sm:pt-24">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <span className="inline-flex items-center gap-2 rounded-full border border-slate-800 bg-slate-900/70 px-4 py-1.5 text-xs font-medium text-slate-300 backdrop-blur-xl">
+              <Sparkles className="h-3.5 w-3.5 text-blue-400" />
+              Free &amp; Private — No sign-up required
             </span>
-            <h1 className="mx-auto mt-6 max-w-3xl text-balance font-display text-4xl font-semibold leading-[1.08] tracking-tight text-foreground sm:text-5xl lg:text-6xl">
-              Is it written by a human or an{" "}
-              <span className="text-primary">AI?</span>
+            <h1 className="mx-auto mt-6 max-w-4xl font-display text-4xl font-bold leading-[1.1] tracking-tight text-balance sm:text-5xl lg:text-6xl">
+              Detect{" "}
+              <span className="gradient-text">AI-Generated Content</span>{" "}
+              in seconds
             </h1>
-            <p className="mx-auto mt-5 max-w-2xl text-pretty text-base leading-relaxed text-muted-foreground sm:text-lg">
-              AI Detector Pro reads the statistical fingerprints of writing —
-              sentence rhythm, vocabulary variety, and telltale AI phrasing — to
-              estimate whether text came from a person or a model like ChatGPT.
-              It all runs in your browser, so your text never leaves your
-              device.
+            <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-slate-400 sm:text-lg">
+              AI Detector Pro analyzes burstiness, trigger-word density, and
+              vocabulary variety to estimate whether text was written by a
+              human or an AI model — 100% in your browser, with zero data
+              stored.
             </p>
             <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
-              <a href="#tool" className="btn-primary">
-                <ScanLine className="h-4 w-4" />
-                Check your text
+              <a
+                href="#tool"
+                className="inline-flex items-center gap-2 rounded-lg gradient-btn px-6 py-3 text-sm font-bold shadow-lg shadow-blue-500/30 transition-transform hover:scale-[1.03]"
+              >
+                <ScanText className="h-4 w-4" />
+                Start Checking
               </a>
-              <a href="#how-it-works" className="btn-outline">
+              <a
+                href="#faq"
+                className="inline-flex items-center gap-2 rounded-lg border border-slate-800 bg-slate-900/60 px-6 py-3 text-sm font-semibold text-slate-200 transition-colors hover:bg-slate-800/80"
+              >
                 How it works
               </a>
             </div>
+          </motion.div>
 
-            <div className="mx-auto mt-10 grid max-w-3xl grid-cols-2 gap-3 sm:grid-cols-4">
-              <TrustChip icon={<Zap className="h-4 w-4 text-primary" />} label="Instant results" />
-              <TrustChip icon={<Lock className="h-4 w-4 text-primary" />} label="Nothing stored" />
-              <TrustChip icon={<ShieldCheck className="h-4 w-4 text-primary" />} label="No sign-up" />
-              <TrustChip icon={<Activity className="h-4 w-4 text-primary" />} label="Transparent signals" />
-            </div>
+          {/* Trust strip */}
+          <div className="mx-auto mt-12 grid max-w-3xl grid-cols-2 gap-3 sm:grid-cols-4">
+            <TrustChip icon={<Zap className="h-4 w-4 text-blue-300" />} label="Instant" />
+            <TrustChip icon={<Lock className="h-4 w-4 text-cyan-300" />} label="Zero storage" />
+            <TrustChip icon={<ShieldCheck className="h-4 w-4 text-purple-300" />} label="No sign-up" />
+            <TrustChip icon={<Gauge className="h-4 w-4 text-emerald-300" />} label="3 signals" />
           </div>
         </section>
 
-        {/* TOOL */}
-        <section className="mx-auto mt-12 max-w-6xl px-4 sm:px-6">
-          <DetectorTool />
-          <div className="mt-8">
+        {/* TOOL + RESULT */}
+        <section className="mx-auto mt-14 max-w-7xl px-4 sm:px-6">
+          <div className="grid gap-5 lg:grid-cols-2">
+            <Workspace
+              text={text}
+              setText={setText}
+              onCheck={handleCheck}
+              analyzing={analyzing}
+            />
+            <ResultCard result={result} analyzing={analyzing} />
+          </div>
+
+          <div className="mt-6">
             <AdSlot format="leaderboard" slot="home-top" />
           </div>
         </section>
 
-        {/* HOW IT WORKS */}
-        <section id="how-it-works" className="mx-auto mt-24 max-w-6xl px-4 sm:px-6">
+        {/* HOW IT WORKS / SIGNALS */}
+        <section className="mx-auto mt-20 max-w-7xl px-4 sm:px-6">
           <SectionHeading
-            eyebrow="How it works"
-            title="Three signals, one transparent score"
-            sub="We don't claim to read minds. We measure concrete statistical features of your text and combine them openly — so you can see exactly why a score landed where it did."
+            eyebrow="The Signals"
+            title="Three heuristics, one score"
+            sub="We don't pretend to read minds. We measure concrete statistical features of the text and combine them transparently."
           />
-          <div className="mt-10 grid gap-4 md:grid-cols-3">
+          <div className="mt-8 grid gap-4 md:grid-cols-3">
             <SignalCard
-              icon={<Waves className="h-5 w-5 text-primary" />}
+              icon={<Waves className="h-6 w-6 text-blue-300" />}
               title="Burstiness"
-              body="Humans write in bursts — a short, punchy line next to a long, winding one. We measure how much sentence lengths vary. Consistently even pacing is a hallmark of AI prose."
+              body="Humans write in bursts — short punchy sentences mixed with long ones. We measure the standard deviation of sentence lengths. Low variance is a hallmark of AI prose."
             />
             <SignalCard
-              icon={<Brain className="h-5 w-5 text-primary" />}
-              title="AI phrase density"
-              body="Language models lean on certain phrases — 'delve', 'furthermore', 'tapestry', 'it is important to note'. We count these template phrases and weight them per 100 words."
+              icon={<Brain className="h-6 w-6 text-purple-300" />}
+              title="Trigger-Word Density"
+              body="AI models overuse certain phrases: 'delve', 'furthermore', 'tapestry', 'it is important to note'. We count these and weight them per 100 words."
             />
             <SignalCard
-              icon={<Activity className="h-5 w-5 text-primary" />}
-              title="Vocabulary variety"
-              body="The type-token ratio compares unique words to total words. AI text often clusters in a narrow, repetitive band. We flag variety that is unusually low or high."
+              icon={<Activity className="h-6 w-6 text-cyan-300" />}
+              title="Type-Token Ratio"
+              body="Unique words divided by total words. AI text often has a narrow, repetitive vocabulary. We flag unusually low or high variety."
             />
           </div>
         </section>
 
-        {/* DEEP DIVE */}
-        <section className="mx-auto mt-24 max-w-3xl px-4 sm:px-6">
+        {/* DEEP SEO: BURSTINESS & PERPLEXITY */}
+        <section className="mx-auto mt-20 max-w-4xl px-4 sm:px-6">
           <SectionHeading
-            eyebrow="The science"
-            title="Burstiness and perplexity, explained"
-            sub="The two ideas behind modern AI-text detection — in plain language."
+            eyebrow="Deep Dive"
+            title="Burstiness &amp; Perplexity, explained"
+            sub="The two concepts that power modern AI text detection — and how AI Detector Pro uses them."
           />
-          <article className="prose-article mt-8">
-            <h2>What is burstiness?</h2>
-            <p>
-              Burstiness describes how much sentence length varies across a
-              piece of writing. A human author might fire off a four-word
-              sentence, follow it with a thirty-word one, then drop a fragment.
-              A language model, trained to produce fluent and balanced output,
-              tends to settle into a narrower band of sentence lengths.
-              Statistically, burstiness is simply the standard deviation of the
-              word count per sentence.
+
+          <article className="glass-card mt-8 p-6 sm:p-8">
+            <h2 className="font-display text-2xl font-bold text-white">
+              What is Burstiness?
+            </h2>
+            <p className="mt-3 text-sm leading-relaxed text-slate-300">
+              Burstiness measures how much sentence lengths vary within a piece
+              of writing. A human author might write a four-word sentence, then
+              a thirty-word one, then a fragment. An AI model, trained to
+              produce fluent, balanced output, tends toward a narrower band of
+              sentence lengths. In statistical terms, burstiness is the
+              standard deviation of per-sentence word counts.
             </p>
-            <p>
-              A low burstiness score does not automatically mean text is
-              AI-generated — polished human writing can be smooth too. But
-              combined with other signals, consistently low burstiness is one of
-              the strongest fingerprints of machine writing.
+            <p className="mt-3 text-sm leading-relaxed text-slate-300">
+              A low burstiness score does not automatically mean a text is
+              AI-generated — polished human writing can also be smooth. But
+              combined with other signals, consistently low burstiness is one
+              of the strongest statistical fingerprints of machine-generated
+              prose.
             </p>
-            <h2>What is perplexity?</h2>
-            <p>
-              Perplexity is a language-modeling metric that asks, in effect,
-              &ldquo;how surprised was a model by this text?&rdquo; Human writing
-              is less predictable, so it tends to score higher perplexity.
-              AI-generated text, produced by a model that optimizes for the most
-              likely next word, tends to be more predictable and lower in
-              perplexity.
+
+            <h3 className="mt-7 font-display text-xl font-bold text-white">
+              What is Perplexity?
+            </h3>
+            <p className="mt-3 text-sm leading-relaxed text-slate-300">
+              Perplexity is a language-modeling metric: it asks, "how surprised
+              was a model by this text?" Human writing tends to be more
+              unpredictable, so it yields higher perplexity. AI-generated text,
+              produced by a model optimizing for likely next tokens, tends to
+              be more predictable and thus lower in perplexity.
             </p>
-            <p>
-              AI Detector Pro does not run a full language model, because that
-              would require sending your text to a server. Instead we approximate
-              the same intuition with a lightweight, in-browser proxy: vocabulary
-              variety and AI-phrase density capture predictability and template
-              reuse without ever transmitting your data.
+            <p className="mt-3 text-sm leading-relaxed text-slate-300">
+              AI Detector Pro does not run a full language model (that would
+              require sending your text to a server). Instead, we approximate
+              the underlying intuition with a lightweight, client-side proxy:
+              type-token ratio and trigger-word density. These capture
+              vocabulary predictability and phrase-template reuse without ever
+              transmitting your data.
             </p>
-            <h2>Why combine signals?</h2>
-            <p>
-              No single metric is reliable alone. A legal document can be
-              low-burstiness yet fully human. A creative prompt can push an AI
-              toward high burstiness. By blending burstiness, AI-phrase density,
-              vocabulary variety, and a per-sentence phrase penalty, we produce a
-              sturdier estimate that is harder to fool with any one trick.
+
+            <h3 className="mt-7 font-display text-xl font-bold text-white">
+              Why combine signals?
+            </h3>
+            <p className="mt-3 text-sm leading-relaxed text-slate-300">
+              No single metric is reliable on its own. A legal document can be
+              low-burstiness yet fully human. A creative AI prompt can produce
+              high-burstiness output. By blending burstiness (42% weight),
+              trigger density (28%), type-token ratio (15%), and a per-sentence
+              trigger penalty (15%), we produce a more robust estimate that is
+              harder to game with any one trick.
             </p>
+
+            <div className="mt-6">
+              <AdSlot format="rectangle" slot="home-inline" />
+            </div>
           </article>
-          <div className="mt-8">
-            <AdSlot format="rectangle" slot="home-inline" />
-          </div>
         </section>
 
         {/* FAQ */}
-        <section id="faq" className="mx-auto mt-24 max-w-3xl px-4 sm:px-6">
+        <section id="faq" className="mx-auto mt-20 max-w-3xl px-4 sm:px-6">
           <SectionHeading
             eyebrow="FAQ"
             title="Frequently asked questions"
-            sub="What the detector can — and can't — tell you."
+            sub="Everything you need to know about how the detector works and what it can (and can't) tell you."
           />
           <div className="mt-8">
             <FAQAccordion />
           </div>
         </section>
 
-        {/* BLOG CTA */}
-        <section className="mx-auto mt-24 max-w-6xl px-4 sm:px-6">
-          <div className="card-flat flex flex-col items-start justify-between gap-4 bg-primary-soft p-6 sm:flex-row sm:items-center sm:p-8">
-            <div>
-              <h2 className="font-display text-xl font-semibold text-foreground sm:text-2xl">
-                Learn to spot AI writing yourself
+        {/* CTA */}
+        <section className="mx-auto mt-20 max-w-5xl px-4 sm:px-6">
+          <div className="glass-card relative overflow-hidden p-8 text-center sm:p-12">
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-blue-500/10 via-transparent to-purple-500/10" />
+            <div className="relative">
+              <h2 className="font-display text-2xl font-bold text-white sm:text-3xl">
+                Ready to check your text?
               </h2>
-              <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted-foreground">
-                Our blog breaks down AI detection, academic integrity, and
-                writing well in the age of generative AI — with practical,
-                jargon-free guides.
+              <p className="mx-auto mt-3 max-w-lg text-sm text-slate-400">
+                Paste anything — an essay, an article, a comment — and get an
+                instant AI probability score. No account, no storage.
               </p>
+              <a
+                href="#tool"
+                className="mt-6 inline-flex items-center gap-2 rounded-lg gradient-btn px-6 py-3 text-sm font-bold shadow-lg shadow-blue-500/30 transition-transform hover:scale-[1.03]"
+              >
+                <ScanText className="h-4 w-4" />
+                Open the detector
+              </a>
             </div>
-            <Link href="/blog" className="btn-primary shrink-0">
-              Read the blog
-              <ArrowRight className="h-4 w-4" />
-            </Link>
           </div>
         </section>
 
-        <div className="mx-auto mt-12 max-w-6xl px-4 sm:px-6">
+        <div className="mx-auto mt-10 max-w-7xl px-4 sm:px-6">
           <AdSlot format="leaderboard" slot="home-bottom" />
         </div>
       </main>
@@ -218,7 +244,7 @@ export default function HomePage() {
 
 function TrustChip({ icon, label }) {
   return (
-    <div className="flex items-center justify-center gap-2 rounded-xl border border-border bg-card px-3 py-2.5 text-xs font-medium text-foreground">
+    <div className="glass-card-soft flex items-center justify-center gap-2 px-3 py-2.5 text-xs font-medium text-slate-300">
       {icon}
       {label}
     </div>
@@ -227,30 +253,44 @@ function TrustChip({ icon, label }) {
 
 function SectionHeading({ eyebrow, title, sub }) {
   return (
-    <div className="text-center">
-      <span className="text-xs font-semibold uppercase tracking-widest text-primary">
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-80px" }}
+      transition={{ duration: 0.4 }}
+      className="text-center"
+    >
+      <span className="text-xs font-semibold uppercase tracking-widest text-blue-400">
         {eyebrow}
       </span>
-      <h2 className="mt-2 text-balance font-display text-3xl font-semibold tracking-tight text-foreground">
-        {title}
-      </h2>
-      <p className="mx-auto mt-3 max-w-2xl text-pretty text-sm leading-relaxed text-muted-foreground">
-        {sub}
-      </p>
-    </div>
+      <h2
+        className="mt-2 font-display text-3xl font-bold text-balance"
+        dangerouslySetInnerHTML={{ __html: title }}
+      />
+      <p
+        className="mx-auto mt-3 max-w-2xl text-sm leading-relaxed text-slate-400"
+        dangerouslySetInnerHTML={{ __html: sub }}
+      />
+    </motion.div>
   );
 }
 
 function SignalCard({ icon, title, body }) {
   return (
-    <div className="card p-6">
-      <div className="grid h-11 w-11 place-items-center rounded-xl border border-border bg-primary-soft">
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-60px" }}
+      transition={{ duration: 0.4 }}
+      className="glass-card p-6"
+    >
+      <div className="grid h-11 w-11 place-items-center rounded-xl border border-slate-800 bg-slate-950/60">
         {icon}
       </div>
-      <h3 className="mt-4 font-display text-lg font-semibold text-foreground">
+      <h3 className="mt-4 font-display text-lg font-bold text-white">
         {title}
       </h3>
-      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{body}</p>
-    </div>
+      <p className="mt-2 text-sm leading-relaxed text-slate-400">{body}</p>
+    </motion.div>
   );
 }

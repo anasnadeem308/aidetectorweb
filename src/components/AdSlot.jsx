@@ -1,57 +1,52 @@
-"use client";
-
-import { useEffect, useRef } from "react";
-import { SITE } from "../lib/site";
+import { Megaphone } from "lucide-react";
 
 /**
- * Google AdSense display unit.
- *
- * Renders a real <ins class="adsbygoogle"> ONLY when a publisher ID is
- * configured in src/lib/site.js. Until then it renders nothing at all — no
- * visible placeholder text, which keeps the site clean for AdSense review.
+ * Advertisement placeholder ready for Google AdSense code.
+ * Replace the inner comment block with your AdSense <ins> markup.
  *
  * @param {Object} props
- * @param {string} props.slot   - AdSense ad-unit slot id.
- * @param {"leaderboard"|"rectangle"|"skyscraper"} [props.format]
- * @param {string} [props.className]
+ * @param {string} [props.label] - Optional label override.
+ * @param {string} [props.className] - Extra classes.
+ * @param {"leaderboard"|"rectangle"|"skyscraper"} [props.format] - Visual hint.
+ * @param {string} [props.slot] - AdSense slot id (for reference).
  */
-export default function AdSlot({ slot = "", format = "leaderboard", className = "" }) {
-  const pushed = useRef(false);
-  const publisherId = SITE.adsensePublisherId;
-
-  useEffect(() => {
-    if (!publisherId || pushed.current) return;
-    try {
-      // eslint-disable-next-line no-undef
-      (window.adsbygoogle = window.adsbygoogle || []).push({});
-      pushed.current = true;
-    } catch {
-      // AdSense not yet loaded; will initialize on next paint.
-    }
-  }, [publisherId]);
-
-  // No publisher ID → render nothing (avoids empty ad boxes during review).
-  if (!publisherId) return null;
-
-  const minH = {
-    leaderboard: "min-h-[90px]",
+export default function AdSlot({
+  label = "Sponsored / Advertisement",
+  className = "",
+  format = "leaderboard",
+  slot = "",
+}) {
+  const sizes = {
+    leaderboard: "min-h-[90px] sm:min-h-[120px]",
     rectangle: "min-h-[250px]",
     skyscraper: "min-h-[600px]",
-  }[format];
+  };
 
   return (
     <div
-      className={`flex items-center justify-center overflow-hidden ${minH} ${className}`}
+      className={`glass-card-soft relative flex items-center justify-center overflow-hidden border-dashed px-4 py-6 ${sizes[format]} ${className}`}
+      data-ad-slot={slot || undefined}
+      role="complementary"
       aria-label="Advertisement"
     >
-      <ins
-        className="adsbygoogle"
-        style={{ display: "block", width: "100%" }}
-        data-ad-client={publisherId}
-        data-ad-slot={slot}
-        data-ad-format="auto"
-        data-full-width-responsive="true"
-      />
+      {/* Google AdSense integration point:
+          <ins className="adsbygoogle" style={{display:'block'}}
+               data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+               data-ad-slot={slot}
+               data-ad-format="auto"
+               data-full-width-responsive="true" />
+          (then push (adsbygoogle = window.adsbygoogle || []).push({}) in an effect)
+      */}
+      <div className="pointer-events-none flex flex-col items-center gap-2 text-center">
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-700/80 bg-slate-900/70 px-3 py-1 text-[10px] font-semibold uppercase tracking-widest text-slate-400">
+          <Megaphone className="h-3 w-3" />
+          Ad
+        </span>
+        <span className="text-xs font-medium text-slate-500">{label}</span>
+        <span className="text-[10px] text-slate-600">
+          Your AdSense code goes here
+        </span>
+      </div>
     </div>
   );
 }

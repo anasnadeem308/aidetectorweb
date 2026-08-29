@@ -1,36 +1,30 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Bot,
   UserRound,
   Activity,
   Tag,
-  ScanLine,
+  Gauge,
+  ScanText,
   Info,
-  Check,
-  Copy,
-  Share2,
-  Lightbulb,
 } from "lucide-react";
-import { SITE } from "../lib/site";
 
 /**
- * Result panel with empty, loading, and populated states.
+ * Animated result panel.
  * @param {Object} props
- * @param {object|null} props.result
+ * @param {ReturnType<typeof import("../utils/analyzer").analyzeText>} props.result
  * @param {boolean} props.analyzing
  */
 export default function ResultCard({ result, analyzing }) {
   if (analyzing) {
     return (
-      <div className="card flex min-h-[320px] items-center justify-center p-6">
-        <div className="flex flex-col items-center gap-3 text-muted-foreground">
-          <span className="relative grid h-12 w-12 place-items-center overflow-hidden rounded-xl border border-border bg-muted">
-            <ScanLine className="h-6 w-6 text-primary" />
-            <span className="pointer-events-none absolute inset-x-0 top-0 h-0.5 bg-primary/70 animate-scanline" />
-          </span>
-          <span className="text-sm">Analyzing text patterns…</span>
+      <div className="glass-card flex min-h-[280px] items-center justify-center p-6">
+        <div className="flex flex-col items-center gap-3 text-slate-400">
+          <span className="h-10 w-10 animate-spin rounded-full border-2 border-slate-700 border-t-blue-500" />
+          <span className="text-sm">Running heuristic analysis…</span>
         </div>
       </div>
     );
@@ -38,17 +32,12 @@ export default function ResultCard({ result, analyzing }) {
 
   if (!result || !result.ready) {
     return (
-      <div className="card flex min-h-[320px] flex-col items-center justify-center p-8 text-center">
-        <span className="grid h-12 w-12 place-items-center rounded-xl border border-border bg-muted">
-          <ScanLine className="h-6 w-6 text-muted-foreground" />
-        </span>
-        <h2 className="mt-4 font-display text-lg font-semibold text-foreground">
-          Your result appears here
-        </h2>
-        <p className="mt-2 max-w-xs text-sm leading-relaxed text-muted-foreground">
-          Paste at least 12 words (or try a sample) and run the checker to see a
-          probability score, a plain-language explanation, and the exact signals
-          behind it.
+      <div className="glass-card flex min-h-[280px] flex-col items-center justify-center p-6 text-center">
+        <ScanText className="h-10 w-10 text-slate-600" />
+        <p className="mt-3 max-w-xs text-sm text-slate-400">
+          Results appear here. Paste at least 12 words and run the checker to
+          see a probability breakdown, burstiness score, and matched AI trigger
+          phrases.
         </p>
       </div>
     );
@@ -68,171 +57,151 @@ function Results({ result }) {
     sentenceCount,
     ttr,
     scoreLabel,
-    explanation,
   } = result;
 
-  const [copied, setCopied] = useState(false);
-
-  const tone =
+  const aiTone =
     aiProbability >= 75
-      ? { text: "text-alert", bg: "bg-alert-soft", bar: "bg-alert", ring: "border-alert/30" }
+      ? "from-red-500 to-orange-500"
       : aiProbability >= 50
-      ? { text: "text-caution", bg: "bg-caution-soft", bar: "bg-caution", ring: "border-caution/30" }
-      : { text: "text-primary", bg: "bg-primary-soft", bar: "bg-primary", ring: "border-primary/30" };
+      ? "from-amber-500 to-yellow-500"
+      : aiProbability >= 25
+      ? "from-emerald-500/80 to-teal-500"
+      : "from-emerald-500 to-green-500";
 
-  function buildSummaryText() {
-    return [
-      `AI Detector Pro result: ${scoreLabel}`,
-      `AI probability: ${aiProbability}% | Human probability: ${humanProbability}%`,
-      `Based on ${wordCount} words across ${sentenceCount} sentences.`,
-      explanation?.summary || "",
-      `Checked with ${SITE.name} — ${SITE.url}`,
-    ]
-      .filter(Boolean)
-      .join("\n");
-  }
-
-  async function handleCopy() {
-    try {
-      await navigator.clipboard.writeText(buildSummaryText());
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      /* ignore */
-    }
-  }
-
-  async function handleShare() {
-    const shareData = {
-      title: `${SITE.name} result`,
-      text: buildSummaryText(),
-      url: SITE.url,
-    };
-    try {
-      if (navigator.share) await navigator.share(shareData);
-      else await handleCopy();
-    } catch {
-      /* user cancelled */
-    }
-  }
+  const labelColor =
+    aiProbability >= 75
+      ? "text-red-300"
+      : aiProbability >= 50
+      ? "text-amber-300"
+      : "text-emerald-300";
 
   return (
-    <div className="card animate-fadeInUp p-5 sm:p-6">
-      <div className="flex flex-wrap items-start justify-between gap-3">
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: "easeOut" }}
+      className="glass-card relative overflow-hidden p-5 sm:p-6"
+    >
+      <div className="pointer-events-none absolute -left-16 -top-16 h-48 w-48 rounded-full bg-purple-500/10 blur-3xl" />
+
+      <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="font-display text-lg font-semibold text-foreground">
-            Analysis result
-          </h2>
-          <p className="text-xs text-muted-foreground">
+          <h3 className="font-display text-lg font-bold text-white">
+            Analysis Result
+          </h3>
+          <p className="text-xs text-slate-400">
             Based on {wordCount} words across {sentenceCount} sentences
           </p>
         </div>
         <span
-          className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm font-semibold ${tone.text} ${tone.ring} ${tone.bg}`}
+          className={`inline-flex w-fit items-center gap-1.5 rounded-full border border-slate-700/70 bg-slate-900/70 px-3 py-1 text-sm font-bold ${labelColor}`}
         >
+          <Gauge className="h-4 w-4" />
           {scoreLabel}
         </span>
       </div>
 
-      {/* Meters */}
-      <div className="mt-5 grid gap-3 sm:grid-cols-2">
+      <div className="mt-5 grid gap-4 sm:grid-cols-2">
         <Meter
           icon={<Bot className="h-4 w-4" />}
-          label="AI probability"
+          label="AI Probability"
           value={aiProbability}
-          barClass="bg-alert"
+          gradient="from-red-500 via-orange-500 to-amber-500"
         />
         <Meter
           icon={<UserRound className="h-4 w-4" />}
-          label="Human probability"
+          label="Human Probability"
           value={humanProbability}
-          barClass="bg-primary"
+          gradient="from-emerald-500 via-green-500 to-teal-500"
         />
       </div>
 
-      {/* Plain-language explanation */}
-      {explanation && (
-        <div className={`mt-5 rounded-xl border ${tone.ring} ${tone.bg} p-4`}>
-          <div className="flex items-center gap-2">
-            <Lightbulb className={`h-4 w-4 ${tone.text}`} />
-            <h3 className={`text-sm font-semibold ${tone.text}`}>
-              What this means
-            </h3>
-          </div>
-          <p className="mt-2 text-sm leading-relaxed text-foreground/90">
-            {explanation.summary}
-          </p>
-          <ul className="mt-3 space-y-2">
-            {explanation.points.map((p, i) => (
-              <li key={i} className="flex gap-2 text-sm leading-relaxed text-foreground/80">
-                <span className={`mt-2 h-1.5 w-1.5 shrink-0 rounded-full ${tone.bar}`} />
-                {p}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      {/* Signals */}
       <div className="mt-5 grid gap-3 sm:grid-cols-3">
-        <Metric icon={<Activity className="h-4 w-4 text-primary" />} label="Burstiness" value={burstiness.toString()} hint="Sentence-length variance" />
-        <Metric icon={<ScanLine className="h-4 w-4 text-primary" />} label="Type-token ratio" value={ttr.toString()} hint="Vocabulary variety" />
-        <Metric icon={<Tag className="h-4 w-4 text-primary" />} label="Trigger hits" value={triggerCount.toString()} hint="AI-favored phrases" />
+        <MetricBadge
+          icon={<Activity className="h-4 w-4 text-blue-300" />}
+          label="Burstiness"
+          value={burstiness.toString()}
+          hint="Sentence-length variance"
+        />
+        <MetricBadge
+          icon={<ScanText className="h-4 w-4 text-cyan-300" />}
+          label="Type-Token Ratio"
+          value={ttr.toString()}
+          hint="Vocabulary variety"
+        />
+        <MetricBadge
+          icon={<Tag className="h-4 w-4 text-purple-300" />}
+          label="Trigger Hits"
+          value={triggerCount.toString()}
+          hint="AI-favored phrases"
+        />
       </div>
 
-      {/* Matched triggers */}
-      {matchedTriggers.length > 0 && (
-        <div className="mt-5">
-          <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
-            <Tag className="h-4 w-4 text-primary" />
-            Matched AI trigger phrases
-          </div>
-          <div className="mt-2.5 flex flex-wrap gap-2">
-            {matchedTriggers.map((phrase) => (
-              <span
-                key={phrase}
-                className="inline-flex items-center gap-1.5 rounded-full border border-alert/30 bg-alert-soft px-3 py-1 text-xs font-medium text-alert"
-              >
-                {phrase}
-              </span>
-            ))}
-          </div>
+      <div className="mt-5">
+        <div className="flex items-center gap-2 text-sm font-semibold text-slate-200">
+          <Tag className="h-4 w-4 text-purple-400" />
+          Matched AI Trigger Phrases
         </div>
-      )}
-
-      {/* Copy / share */}
-      <div className="mt-5 flex flex-wrap items-center gap-2">
-        <button onClick={handleCopy} className="btn-outline px-3 py-2 text-xs" type="button">
-          {copied ? <Check className="h-4 w-4 text-primary" /> : <Copy className="h-4 w-4" />}
-          {copied ? "Copied" : "Copy result"}
-        </button>
-        <button onClick={handleShare} className="btn-outline px-3 py-2 text-xs" type="button">
-          <Share2 className="h-4 w-4" />
-          Share
-        </button>
+        <AnimatePresence mode="popLayout">
+          {matchedTriggers.length > 0 ? (
+            <motion.div
+              key="chips"
+              initial="hidden"
+              animate="show"
+              variants={{
+                hidden: {},
+                show: { transition: { staggerChildren: 0.05 } },
+              }}
+              className="mt-3 flex flex-wrap gap-2"
+            >
+              {matchedTriggers.map((phrase) => (
+                <motion.span
+                  key={phrase}
+                  variants={{
+                    hidden: { opacity: 0, scale: 0.8 },
+                    show: { opacity: 1, scale: 1 },
+                  }}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-purple-500/40 bg-purple-500/10 px-3 py-1 text-xs font-medium text-purple-200"
+                >
+                  <span className="h-1.5 w-1.5 rounded-full bg-purple-400" />
+                  {phrase}
+                </motion.span>
+              ))}
+            </motion.div>
+          ) : (
+            <p className="mt-3 text-xs text-slate-500">
+              No AI-favored trigger phrases detected — a positive signal for
+              human authorship.
+            </p>
+          )}
+        </AnimatePresence>
       </div>
 
-      <div className="mt-5 flex items-start gap-2 rounded-xl border border-border bg-muted/50 p-3 text-xs leading-relaxed text-muted-foreground">
-        <Info className="mt-0.5 h-4 w-4 shrink-0" />
+      <div className="mt-5 flex items-start gap-2 rounded-xl border border-slate-800/80 bg-slate-950/50 p-3 text-xs text-slate-400">
+        <Info className="mt-0.5 h-4 w-4 shrink-0 text-slate-500" />
         <p>
-          This is a heuristic estimate, not a verdict. Always apply human
-          judgment before making high-stakes decisions about authorship.
+          This is a heuristic estimate, not a verdict. Scores combine
+          burstiness, trigger-word density, and type-token ratio. Always apply
+          human judgment for high-stakes decisions.
         </p>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
-function Meter({ icon, label, value, barClass }) {
+function Meter({ icon, label, value, gradient }) {
+  // Animate the value count-up alongside the bar fill.
   const [display, setDisplay] = useState(0);
   useEffect(() => {
     let raf;
     const start = performance.now();
+    const from = 0;
+    const to = value;
     const dur = 700;
     const tick = (now) => {
       const p = Math.min((now - start) / dur, 1);
       const eased = 1 - Math.pow(1 - p, 3);
-      setDisplay(Math.round(value * eased));
+      setDisplay(Math.round(from + (to - from) * eased));
       if (p < 1) raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
@@ -240,37 +209,39 @@ function Meter({ icon, label, value, barClass }) {
   }, [value]);
 
   return (
-    <div className="rounded-xl border border-border bg-muted/40 p-4">
+    <div className="rounded-xl border border-slate-800/80 bg-slate-950/50 p-4">
       <div className="flex items-center justify-between text-sm">
-        <span className="inline-flex items-center gap-2 font-medium text-muted-foreground">
+        <span className="inline-flex items-center gap-2 font-medium text-slate-300">
           {icon}
           {label}
         </span>
-        <span className="tabular font-display text-lg font-semibold text-foreground">
+        <span className="font-display text-lg font-bold text-white">
           {display}%
         </span>
       </div>
-      <div className="mt-2.5 h-2.5 w-full overflow-hidden rounded-full bg-border">
-        <div
-          className={`h-full rounded-full transition-[width] duration-700 ease-out ${barClass}`}
-          style={{ width: `${value}%` }}
+      <div className="mt-2.5 h-2.5 w-full overflow-hidden rounded-full bg-slate-800">
+        <motion.div
+          className={`h-full rounded-full bg-gradient-to-r ${gradient}`}
+          initial={{ width: 0 }}
+          animate={{ width: `${value}%` }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
         />
       </div>
     </div>
   );
 }
 
-function Metric({ icon, label, value, hint }) {
+function MetricBadge({ icon, label, value, hint }) {
   return (
-    <div className="rounded-xl border border-border bg-muted/40 p-3.5">
-      <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+    <div className="rounded-xl border border-slate-800/80 bg-slate-950/50 p-3.5">
+      <div className="flex items-center gap-2 text-xs font-medium text-slate-300">
         {icon}
         {label}
       </div>
-      <div className="tabular mt-1.5 font-display text-2xl font-semibold text-foreground">
+      <div className="mt-1.5 font-display text-2xl font-bold text-white">
         {value}
       </div>
-      <div className="text-[11px] text-muted-foreground">{hint}</div>
+      <div className="text-[11px] text-slate-500">{hint}</div>
     </div>
   );
 }

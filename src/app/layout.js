@@ -1,111 +1,85 @@
 import "./globals.css";
-import Script from "next/script";
-import { Inter, Fraunces } from "next/font/google";
-import { SITE, absoluteUrl } from "../lib/site";
-import { organizationSchema, websiteSchema } from "../lib/schema";
-
-const inter = Inter({
-  subsets: ["latin"],
-  display: "swap",
-  variable: "--font-inter",
-});
-
-const fraunces = Fraunces({
-  subsets: ["latin"],
-  display: "swap",
-  weight: ["400", "500", "600", "700"],
-  variable: "--font-fraunces",
-});
 
 export const metadata = {
-  metadataBase: new URL(SITE.url),
-  title: {
-    default: `${SITE.name} — Free AI Content Detector & GPT Checker`,
-    template: `%s — ${SITE.name}`,
-  },
-  description: SITE.description,
-  applicationName: SITE.name,
-  authors: [{ name: SITE.author }],
-  creator: SITE.author,
-  publisher: SITE.author,
+  title: "AI Detector Pro — Free AI Content Checker & GPT Detector",
+  description:
+    "AI Detector Pro is a free, privacy-first AI content detector. Analyze burstiness, trigger-word density, and type-token ratio instantly — no sign-up, no data storage.",
   keywords: [
     "AI detector",
     "AI content detector",
     "GPT detector",
     "ChatGPT detector",
-    "AI checker",
-    "AI writing detector",
-    "detect AI text",
     "burstiness",
     "perplexity",
+    "AI writing checker",
+    "free AI checker",
   ],
-  alternates: { canonical: "/" },
+  metadataBase: new URL("https://ai-detector-pro.example.com"),
   openGraph: {
+    title: "AI Detector Pro — Free AI Content Checker",
+    description:
+      "Detect AI-generated text instantly with burstiness, trigger-word density, and type-token ratio heuristics. Zero data stored.",
     type: "website",
-    locale: SITE.locale,
-    url: SITE.url,
-    siteName: SITE.name,
-    title: `${SITE.name} — Free AI Content Detector & GPT Checker`,
-    description: SITE.description,
-    images: [
-      {
-        url: "/og.png",
-        width: 1200,
-        height: 630,
-        alt: `${SITE.name} — Free AI Content Detector`,
-      },
-    ],
+    siteName: "AI Detector Pro",
   },
-  twitter: {
-    card: "summary_large_image",
-    title: `${SITE.name} — Free AI Content Detector`,
-    description: SITE.description,
-    creator: SITE.twitter,
-    images: ["/og.png"],
-  },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: { index: true, follow: true, "max-image-preview": "large" },
-  },
-  category: "technology",
-  icons: {
-    icon: [{ url: "/icon.png", type: "image/png" }],
-    apple: [{ url: "/icon.png" }],
-  },
+  robots: { index: true, follow: true },
 };
 
 export const viewport = {
-  themeColor: "#f2f1ec",
+  themeColor: "#0b0f19",
   width: "device-width",
   initialScale: 1,
 };
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className={`${inter.variable} ${fraunces.variable}`}>
+    <html lang="en">
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+          rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossOrigin="anonymous"
+        />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap"
+          rel="stylesheet"
+        />
+      </head>
       <body className="font-sans antialiased">
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify(organizationSchema()),
-          }}
-        />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify(websiteSchema()),
-          }}
-        />
-        {children}
-        {SITE.adsensePublisherId ? (
-          <Script
-            id="adsbygoogle-init"
-            strategy="lazyOnload"
-            crossOrigin="anonymous"
-            src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${SITE.adsensePublisherId}`}
+        <div className="aurora-bg" aria-hidden="true">
+          <div
+            className="aurora-blob"
+            style={{
+              width: "520px",
+              height: "520px",
+              top: "-120px",
+              left: "-80px",
+              background: "#3b82f6",
+            }}
           />
-        ) : null}
+          <div
+            className="aurora-blob"
+            style={{
+              width: "480px",
+              height: "480px",
+              top: "30%",
+              right: "-100px",
+              background: "#a855f7",
+            }}
+          />
+          <div
+            className="aurora-blob"
+            style={{
+              width: "420px",
+              height: "420px",
+              bottom: "-120px",
+              left: "40%",
+              background: "#22d3ee",
+            }}
+          />
+        </div>
+        <div className="relative z-10">{children}</div>
       </body>
     </html>
   );

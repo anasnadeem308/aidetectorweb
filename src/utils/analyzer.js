@@ -209,14 +209,6 @@ export function analyzeText(text) {
   else if (aiProbability >= 50) scoreLabel = "Mixed Signals";
   else if (aiProbability >= 25) scoreLabel = "Probably Human";
 
-  const explanation = buildExplanation({
-    aiProbability,
-    burstiness,
-    triggerCount,
-    ttr,
-    triggerDensity,
-  });
-
   return {
     aiProbability,
     humanProbability,
@@ -228,79 +220,8 @@ export function analyzeText(text) {
     ttr: Number(ttr.toFixed(3)),
     triggerDensity: Number(triggerDensity.toFixed(2)),
     scoreLabel,
-    explanation,
     ready: true,
   };
-}
-
-/**
- * Turn raw signals into plain-language reasoning an average reader can follow.
- * @returns {{ summary: string, points: string[] }}
- */
-function buildExplanation({ aiProbability, burstiness, triggerCount, ttr, triggerDensity }) {
-  const points = [];
-
-  // Burstiness in plain words.
-  if (burstiness < 2.5) {
-    points.push(
-      "Sentence lengths are very even. Human writing usually mixes short and long sentences, so unusually uniform pacing leans AI."
-    );
-  } else if (burstiness < 4.2) {
-    points.push(
-      "Sentence lengths vary a moderate amount — a mild human signal, but not a strong one."
-    );
-  } else {
-    points.push(
-      "Sentence lengths vary a lot, jumping between short and long. That unevenness is typical of human writing."
-    );
-  }
-
-  // Trigger phrases in plain words.
-  if (triggerCount >= 3) {
-    points.push(
-      `We found ${triggerCount} phrases that AI models tend to overuse (roughly ${triggerDensity} per 100 words). Heavy use of these template phrases is a strong AI signal.`
-    );
-  } else if (triggerCount >= 1) {
-    points.push(
-      `We found ${triggerCount} AI-favored phrase${triggerCount === 1 ? "" : "s"}. A few can appear in human writing too, so this is only a light signal.`
-    );
-  } else {
-    points.push(
-      "No AI-favored template phrases were detected, which slightly supports human authorship."
-    );
-  }
-
-  // Vocabulary variety in plain words.
-  if (ttr < 0.35) {
-    points.push(
-      "The vocabulary is quite repetitive, reusing the same words often. Narrow word variety can indicate machine-generated text."
-    );
-  } else if (ttr > 0.85) {
-    points.push(
-      "The vocabulary is unusually varied for the length, which can also read as artificial in short samples."
-    );
-  } else {
-    points.push(
-      "Vocabulary variety sits in the natural human range — neither too repetitive nor artificially diverse."
-    );
-  }
-
-  let summary;
-  if (aiProbability >= 75) {
-    summary =
-      "Multiple signals point toward AI-generated text. The writing is statistically smooth and template-like, though a heavily edited AI draft or very formal human writing can look the same.";
-  } else if (aiProbability >= 50) {
-    summary =
-      "The signals are mixed. This text has some AI-like traits and some human ones — common in AI drafts that a person edited, or in formal human writing.";
-  } else if (aiProbability >= 25) {
-    summary =
-      "Most signals lean human, with a few patterns worth a second look. Overall this reads more like human writing than machine output.";
-  } else {
-    summary =
-      "The signals strongly favor human authorship: uneven pacing, natural vocabulary, and few template phrases.";
-  }
-
-  return { summary, points };
 }
 
 export { AI_TRIGGER_PHRASES };
